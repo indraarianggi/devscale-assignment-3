@@ -5,6 +5,7 @@ import { model, Schema } from "mongoose";
 const todoSchema = new Schema({
   title: String,
   content: String,
+  completed: Boolean,
   userId: { type: Schema.Types.ObjectId, ref: "User" },
 });
 

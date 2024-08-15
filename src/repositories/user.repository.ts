@@ -1,16 +1,18 @@
+import type { NextFunction } from "express";
+
 import { User } from "../models/user.schema";
 import { IUser } from "../types";
 
 const UserRepositories = {
-  getByEmail: async (email: string) => {
+  getByEmail: async (email: string, next: NextFunction) => {
     try {
       const user = await User.findOne({ email });
       return user;
     } catch (error) {
-      console.log(`Error in UserRepositories.getByEmail: ${error}`);
+      next(error);
     }
   },
-  create: async (user: IUser) => {
+  create: async (user: IUser, next: NextFunction) => {
     try {
       const createUser = new User(user);
 
@@ -18,7 +20,7 @@ const UserRepositories = {
 
       return newUser;
     } catch (error) {
-      console.log(`Error in UserRepositories.create: ${error}`);
+      next(error);
     }
   },
 };

@@ -1,89 +1,40 @@
-import type { Request, Response } from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import type { NextFunction, Request, Response } from "express";
 
-import UserRepositories from "../repositories/user.repository";
-import AuthRepositories from "../repositories/auth.repository";
+import UserServices from "../services/user.service";
+import AuthServices from "../services/auth.service";
 
 const UserControllers = {
-  handleRegisterUser: async (req: Request, res: Response) => {
+  handleRegisterUser: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     const { name, email, password } = req.body;
 
-    // input validation
-    if (!name || !email || password?.length < 8) {
-      return res.status(400).json({ message: "invalid input" });
-    }
-
     try {
-      // hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
+      await UserServices.create({ name, email, password }, next);
 
-      const newUser = await UserRepositories.create({
-        name,
-        email,
-        password: hashedPassword,
-      });
-
-      return res.status(201).json({ message: "User register success!" });
+      res.status(201).json({ message: "User register success!" });
     } catch (error) {
-      console.log(`Error in UserControllers.create: ${error}`);
+      next(error);
     }
   },
-  handleLoginUser: async (req: Request, res: Response) => {
+  handleLoginUser: async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
 
-    // input validation
-    if (!email || password?.length < 8) {
-      return res.status(400).json({ message: "invalid input" });
-    }
-
     try {
-      // find user by email
-      const user = await UserRepositories.getByEmail(email);
+      const result = await AuthServices.login({ email, password }, next);
 
-      if (!user) {
-        return res.status(404).json({ message: "user not found" });
+      if (result) {
+        res
+          .cookie("accessToken", result?.accessToken, { httpOnly: true })
+          .cookie("refreshToken", result?.refreshToken, { httpOnly: true })
+          .status(200)
+          .json({ message: "Login success!" });
       }
-
-      if (!user.password) {
-        return res.status(400).json({ message: "password not set" });
-      }
-
-      // password validation
-      const isPasswordMatch = await bcrypt.compare(password, user.password!);
-
-      if (!isPasswordMatch) {
-        return res.status(403).json({ message: "invalid password" });
-      }
-
-      // authorization
-      const payload = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      };
-
-      const accessToken = jwt.sign(
-        payload,
-        process.env.JWT_ACCESS_SECRET as string,
-        { expiresIn: process.env.JWT_ACCESS_EXPIRES_TIME || 3600 }
-      );
-
-      const refreshToken = jwt.sign(
-        payload,
-        process.env.JWT_REFRESH_SECRET as string,
-        { expiresIn: process.env.JWT_REFRESH_EXPIRES_TIME || "7d" }
-      );
-
-      // save refresh token to database
-      await AuthRepositories.create({ userId: user.id, refreshToken });
-
-      res
-        .cookie("accessToken", accessToken, { httpOnly: true })
-        .cookie("refreshToken", refreshToken, { httpOnly: true })
-        .status(200)
-        .json({ message: "Login success!" });
-    } catch (error) {}
+    } catch (error) {
+      next(error);
+    }
   },
 };
 
