@@ -1,0 +1,30 @@
+### Get All Todos
+GET http://localhost:8000/todos
+
+### Get Todo By Id
+GET http://localhost:8000/todos/66bd84666b4234fb0278f5c2
+
+### Create New Todo
+POST http://localhost:8000/todos
+Content-Type: application/json
+
+{
+    "title": "Todo 1",
+    "content": "Content of Todo 1",
+    "completed": false,
+    "userId": "66bb1d2e15a88a5b9c11d25c"
+}
+
+### Update Todo
+PUT http://localhost:8000/todos/66bd853c6b4234fb0278f5cf
+Content-Type: application/json
+
+{
+    "title": "Todo 2",
+    "content": "Content of Todo 2 - Edited",
+    "completed": true,
+    "userId": "66bb1d2e15a88a5b9c11d25c"
+}
+
+### Delete Todo
+DELETE http://localhost:8000/todos/66bd853c6b4234fb0278f5cf
