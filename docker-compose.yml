@@ -1,0 +1,30 @@
+version: "3.8"
+
+# list of applications / containers
+services:
+  backend:
+    # build context
+    build: .
+    # expose to port
+    ports:
+      - "8000:8000"
+    # dependencies of app
+    depends_on:
+      - mongodb
+  
+  mongodb:
+    # use image from docker hub
+    image: mongo
+    # expose to port
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=myuser
+      - MONGO_INITDB_ROOT_PASSWORD=mypassword
+    # mapping to volume
+    volumes:
+      - mongodb_data:/data/db
+
+# to persist data
+volumes:
+  mongodb_data:
