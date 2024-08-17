@@ -56,7 +56,7 @@ export const verifyAccessToken = async (
             email: payload.email,
           },
           process.env.JWT_ACCESS_SECRET as string,
-          { expiresIn: process.env.JWT_ACCESS_EXPIRES_TIME || 360 }
+          { expiresIn: process.env.JWT_ACCESS_EXPIRES_TIME || 3600 }
         );
 
         res.cookie("accessToken", newAccessToken, { httpOnly: true });
