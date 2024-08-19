@@ -15,3 +15,8 @@ export interface ITodo {
   completed: boolean;
   userId: string;
 }
+
+export interface ICustomError {
+  statusCode: number;
+  message: string;
+}

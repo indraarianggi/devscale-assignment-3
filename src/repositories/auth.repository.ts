@@ -1,23 +1,29 @@
-import type { NextFunction } from "express";
 import { Auth } from "../models/auth.schema";
 import { IAuth } from "../types";
 
 const AuthRepositories = {
-  getOne: async (refreshToken: string, next: NextFunction) => {
+  getOne: async (refreshToken: string) => {
     try {
       const auth = Auth.findOne({ refreshToken });
       return auth;
     } catch (error) {
-      next(error);
+      throw error;
     }
   },
-  create: async (auth: IAuth, next: NextFunction) => {
+  create: async (auth: IAuth) => {
     try {
       const newRefreshToken = new Auth(auth);
 
       await newRefreshToken.save();
     } catch (error) {
-      next(error);
+      throw error;
+    }
+  },
+  delete: async (refreshToken: string) => {
+    try {
+      await Auth.findOneAndDelete({ refreshToken });
+    } catch (error) {
+      throw error;
     }
   },
 };

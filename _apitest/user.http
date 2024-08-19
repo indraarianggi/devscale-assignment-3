@@ -16,3 +16,6 @@ Content-Type: application/json
     "email": "indra@devscale.id",
     "password": "semangatselalu"
 }
+
+### Logout User
+POST http://localhost:8000/users/logout

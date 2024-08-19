@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 
 import TodoServices from "../services/todo.service";
+import { createError } from "../utils/error";
 
 const TodoControllers = {
   handleGetAllTodos: async (
@@ -9,7 +10,7 @@ const TodoControllers = {
     next: NextFunction
   ) => {
     try {
-      const allTodos = await TodoServices.getAll(next);
+      const allTodos = await TodoServices.getAll();
 
       res
         .status(200)
@@ -24,13 +25,10 @@ const TodoControllers = {
     next: NextFunction
   ) => {
     try {
-      const todo = await TodoServices.getById(req.params.id, next);
+      const todo = await TodoServices.getById(req.params.id);
 
       if (!todo) {
-        throw {
-          statusCode: 404,
-          error: new Error("todo not found"),
-        };
+        throw createError(404, "todo not found");
       }
 
       return res.status(200).json({
@@ -45,16 +43,15 @@ const TodoControllers = {
     const { title, content, completed, userId } = req.body;
 
     try {
-      const newTodo = await TodoServices.create(
-        { title, content, completed, userId },
-        next
-      );
+      const newTodo = await TodoServices.create({
+        title,
+        content,
+        completed,
+        userId,
+      });
 
       if (!newTodo) {
-        throw {
-          statusCode: 400,
-          error: new Error("failed to create todo"),
-        };
+        throw createError(400, "failed to create todo");
       }
 
       res
@@ -68,16 +65,12 @@ const TodoControllers = {
     const { title, content, completed, userId } = req.body;
 
     try {
-      const updatedTodo = await TodoServices.update(
-        req.params.id,
-        {
-          title,
-          content,
-          completed,
-          userId,
-        },
-        next
-      );
+      const updatedTodo = await TodoServices.update(req.params.id, {
+        title,
+        content,
+        completed,
+        userId,
+      });
 
       return res.status(200).json({
         message: "Successfully update todo",
@@ -89,7 +82,7 @@ const TodoControllers = {
   },
   handleDeleteTodo: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await TodoServices.delete(req.params.id, next);
+      await TodoServices.delete(req.params.id);
 
       return res.status(200).json({ message: "Successfully delete todo" });
     } catch (error) {

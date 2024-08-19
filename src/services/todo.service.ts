@@ -2,25 +2,26 @@ import type { NextFunction } from "express";
 
 import TodoRepositories from "../repositories/todo.repository";
 import { ITodo } from "../types";
+import { createError } from "../utils/error";
 
 const TodoServices = {
-  getAll: async (next: NextFunction) => {
+  getAll: async () => {
     try {
-      const allTodos = await TodoRepositories.getAll(next);
+      const allTodos = await TodoRepositories.getAll();
       return allTodos;
     } catch (error) {
-      next(error);
+      throw error;
     }
   },
-  getById: async (todoId: string, next: NextFunction) => {
+  getById: async (todoId: string) => {
     try {
-      const todo = await TodoRepositories.getById(todoId, next);
+      const todo = await TodoRepositories.getById(todoId);
       return todo;
     } catch (error) {
-      next(error);
+      throw error;
     }
   },
-  create: async (todo: ITodo, next: NextFunction) => {
+  create: async (todo: ITodo) => {
     try {
       // input validation
       if (
@@ -29,21 +30,19 @@ const TodoServices = {
         typeof todo.completed === undefined ||
         !todo.userId
       ) {
-        throw {
-          statusCode: 400,
-          error: new Error(
-            "title, content, completed, and userId can not be empty"
-          ),
-        };
+        throw createError(
+          400,
+          "title, content, completed, and userId can not be empty"
+        );
       }
 
-      const newTodo = await TodoRepositories.create(todo, next);
+      const newTodo = await TodoRepositories.create(todo);
       return newTodo;
     } catch (error) {
-      next(error);
+      throw error;
     }
   },
-  update: async (todoId: string, updatedData: ITodo, next: NextFunction) => {
+  update: async (todoId: string, updatedData: ITodo) => {
     try {
       // input validation
       if (
@@ -52,29 +51,23 @@ const TodoServices = {
         typeof updatedData.completed === undefined ||
         !updatedData.userId
       ) {
-        throw {
-          statusCode: 400,
-          error: new Error(
-            "title, content, completed, and userId can not be empty"
-          ),
-        };
+        throw createError(
+          400,
+          "title, content, completed, and userId can not be empty"
+        );
       }
 
-      const updatedTodo = await TodoRepositories.update(
-        todoId,
-        updatedData,
-        next
-      );
+      const updatedTodo = await TodoRepositories.update(todoId, updatedData);
       return updatedTodo;
     } catch (error) {
-      console.log(`Error in ThreadServices.update: ${error}`);
+      throw error;
     }
   },
-  delete: async (todoId: string, next: NextFunction) => {
+  delete: async (todoId: string) => {
     try {
-      await TodoRepositories.delete(todoId, next);
+      await TodoRepositories.delete(todoId);
     } catch (error) {
-      next(error);
+      throw error;
     }
   },
 };

@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+
 import AuthRepositories from "../repositories/auth.repository";
+import { createError } from "../utils/error";
 
 export const verifyAccessToken = async (
   req: Request,
@@ -20,26 +22,17 @@ export const verifyAccessToken = async (
       try {
         // check if refresh token exists
         if (!refreshToken) {
-          throw {
-            statusCode: 401,
-            error: new Error("please re-login..."),
-          };
+          throw createError(401, "please re-login...");
         }
 
         // check if refresh token valid
         jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string);
 
         // if valid, check if refresh token exists in database
-        const activeRefreshToken = await AuthRepositories.getOne(
-          refreshToken,
-          next
-        );
+        const activeRefreshToken = await AuthRepositories.getOne(refreshToken);
 
         if (!activeRefreshToken) {
-          throw {
-            statusCode: 401,
-            error: new Error("please re-login..."),
-          };
+          throw createError(401, "please re-login...");
         }
 
         const payload = jwt.decode(refreshToken) as {
@@ -66,9 +59,6 @@ export const verifyAccessToken = async (
       }
     }
   } else {
-    next({
-      statusCode: 401,
-      error: new Error("access token not provided"),
-    });
+    next(createError(401, "please re-login..."));
   }
 };

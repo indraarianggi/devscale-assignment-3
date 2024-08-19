@@ -1,49 +1,37 @@
-import type { NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 import { IUser } from "../types";
 import UserRepositories from "../repositories/user.repository";
 import AuthRepositories from "../repositories/auth.repository";
+import { createError } from "../utils/error";
 
 const AuthServices = {
-  login: async (credential: Omit<IUser, "name">, next: NextFunction) => {
+  login: async (credential: Omit<IUser, "name">) => {
     try {
       const { email, password } = credential;
 
       // input validation
       if (!email || password?.length < 8) {
-        throw {
-          statusCode: 400,
-          error: new Error("name or password can not be empty"),
-        };
+        throw createError(400, "name or password can not be empty");
       }
 
       // find user by email
-      const user = await UserRepositories.getByEmail(email, next);
+      const user = await UserRepositories.getByEmail(email);
 
       if (!user) {
-        throw {
-          statusCode: 404,
-          error: new Error("user not found"),
-        };
+        throw createError(404, "user not found");
       }
 
       if (!user.password) {
-        throw {
-          statusCode: 400,
-          error: new Error("password not set"),
-        };
+        throw createError(400, "password not set");
       }
 
       // password validation
       const isPasswordMatch = await bcrypt.compare(password, user.password!);
 
       if (!isPasswordMatch) {
-        throw {
-          statusCode: 403,
-          error: new Error("invalid password"),
-        };
+        throw createError(403, "invalid password");
       }
 
       // authorization
@@ -66,11 +54,18 @@ const AuthServices = {
       );
 
       // save refresh token to database
-      await AuthRepositories.create({ userId: user.id, refreshToken }, next);
+      await AuthRepositories.create({ userId: user.id, refreshToken });
 
       return { accessToken, refreshToken };
     } catch (error) {
-      next(error);
+      throw error;
+    }
+  },
+  delete: async (refreshToken: string) => {
+    try {
+      await AuthRepositories.delete(refreshToken);
+    } catch (error) {
+      throw error;
     }
   },
 };

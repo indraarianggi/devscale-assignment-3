@@ -3,9 +3,9 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
-import ErrorHandler from "./middlewares/ErrorHandler";
+import ErrorHandler from "./middlewares/error-handler.middleware";
 import { userRouter } from "./routes/user.route";
-import { todoRouter } from "./routes/todo.routes";
+import { todoRouter } from "./routes/todo.route";
 
 dotenv.config();
 
